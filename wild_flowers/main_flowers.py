@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
 import numpy as np
 from picamera2 import Picamera2
 from yolo_flowers_manager import YoloDetectorWrapper
-from ..utils import SimpleFPS, draw_fps, draw_annotation
+from RPi5_yolov8.utils import SimpleFPS, draw_fps, draw_annotation
 import argparse
 import time
 
