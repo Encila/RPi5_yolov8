@@ -73,12 +73,14 @@ class App(QWidget):
         """Updates the image_label with a new opencv image"""
         # cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB) 
 
-        if self.yolo_detector is None:     
-            display_img = cv_img
-        else:
+        if self.yolo_detector is not None:     
             results = self.yolo_detector.predict(cv_img)
-            display_img = draw_annotation(cv_img, self.yolo_detector.get_label_names(), results)
-
+            if results :
+                display_img = draw_annotation(cv_img, self.yolo_detector.get_label_names(), results)
+            else:
+                display_img = cv_img
+        else:
+            display_img = cv_img
 
         fps, _ = self.fps_util.get_fps()
         draw_fps(display_img, fps)

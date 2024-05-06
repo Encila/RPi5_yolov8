@@ -75,7 +75,7 @@ class YoloDetectorTFLite:
 
         preds = self.interpreter.get_tensor(output_details[0]['index'])
           
-        if preds.size == 0:
+        if preds.size == 0 or preds is None:
             return []    
         
         ######################################################################
