@@ -93,7 +93,7 @@ class YoloDetectorTFLite:
         preds = torch.from_numpy(preds)
         preds = ops.non_max_suppression(preds,
                                         conf,
-                                        0.7,  # todo, make into arg
+                                        0.5,  # todo, make into arg
                                         agnostic=False,
                                         max_det=300,
                                         classes=None)  # hack. just copied values from execution of yolov8n.pt
