@@ -74,7 +74,9 @@ class YoloDetectorTFLite:
         self.interpreter.invoke()
 
         preds = self.interpreter.get_tensor(output_details[0]['index'])
-            
+          
+        if preds.size == 0:
+            return []    
         
         ######################################################################
         # borrowed from ultralytics\models\yolo\detect\predict.py #postprocess
