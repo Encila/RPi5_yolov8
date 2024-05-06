@@ -68,13 +68,11 @@ class YoloDetectorTFLite:
             input_img = frame
         input_img = input_img[np.newaxis, ...]  # add batch dim
         
-        # Convert to float32 if needed
-        if input_details[0]['dtype'] == np.uint8:
-            input_img = input_img.astype(np.uint8)  # Ensure data is in UINT8
-        else:
-            input_img = input_img.astype(np.float32) / 255.  # Scale to [0, 1] if model expects FLOAT32
-
+        input_img = input_img.astype(np.uint8)  # Ensure data is in UINT8
         input_img = input_img[np.newaxis, ...]
+    
+        if input_img.ndim != 4 or input_img.shape[0] != tuple(input_shape):
+            raise ValueError(f"input_img shape is not correct. Expected {input_shape}, got {input_img.shape}")
     
         self.interpreter.set_tensor(input_details[0]['index'], input_img)
 
@@ -100,7 +98,7 @@ class YoloDetectorTFLite:
         preds = torch.from_numpy(preds)
         preds = ops.non_max_suppression(preds,
                                         conf,
-                                        0.5,  # todo, make into arg
+                                        0.5,  # todo, make into arg (0.7)
                                         agnostic=False,
                                         max_det=300,
                                         classes=None)  # hack. just copied values from execution of yolov8n.pt
