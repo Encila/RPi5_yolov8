@@ -119,7 +119,7 @@ def run_no_ui():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="../models/orchidees/model_unquant.tflite")
+    parser.add_argument("--model", default="./models/orchidees/model_unquant.tflite")
     parser.add_argument('--camera_test', action=argparse.BooleanOptionalAction)
     parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
 
