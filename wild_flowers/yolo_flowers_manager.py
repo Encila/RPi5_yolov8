@@ -67,7 +67,8 @@ class YoloDetectorTFLite:
         else:
             input_img = frame
         input_img = input_img[np.newaxis, ...]  # add batch dim
-        print("DEBUG : ", input_img.ndim)
+        print("DEBUG ndim : ", input_img.ndim)
+        print("DEBUG shape : ", input_img.shape)
         
         input_img = input_img.astype(np.uint8)  # Ensure data is in UINT8
         input_img = input_img[np.newaxis, ...]
