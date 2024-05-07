@@ -71,7 +71,7 @@ class App(QWidget):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         class_id, confidence = self.predict(cv_img)
-        label = f"{class_id} ({confidence :.2f}%)"  # Affichage avec confiance
+        label = f"{class_id} ({confidence}%)"  # Affichage avec confiance
         display_img = cv2.putText(cv_img, label, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
         display_img = cv2.rectangle(display_img, (50, 60), (250, 200), (255, 0, 0), 2)  # Dessiner un rectangle exemple
         qt_img = self.convert_cv_qt(display_img)
