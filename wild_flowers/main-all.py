@@ -66,6 +66,7 @@ class App(QWidget):
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
         class_id = np.argmax(output_data)
         confidence = np.max(output_data)
+        print("DEBUG : output_data ->", output_data)
         return class_id, confidence  # Renvoie aussi la confiance
 
     @pyqtSlot(np.ndarray)
