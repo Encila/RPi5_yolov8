@@ -59,22 +59,29 @@ class App(QWidget):
         output_details = self.interpreter.get_output_details()
         input_shape = input_details[0]['shape']
         frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
-        frame = np.expand_dims(frame, axis=0).astype(np.uint8)
-        frame = ((frame - 127.5) / 127.5).astype(np.float32)  # Correction de normalisation
+        frame = np.expend_dims(frame, axis=0)
+        frame = (frame - 127.5) / 127.5)  # Normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
-        class_id = np.argmax(output_data)
-        confidence = np.max(output_data)
-        return class_id, confidence  # Renvoie aussi la confiance
+        boxes = output_data[:, :4]
+        class_ids = np.argmax(output_data[:,4:], axis=1)
+        confidences = np.max(output_data[:,4:], axis=1)
+        return boxes, class_ids, confidences
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
-        class_id, confidence = self.predict(cv_img)
-        label = f"{class_id} ({confidence * 100:.2f}%)"  # Affichage avec confiance
-        display_img = cv2.putText(cv_img, label, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-        display_img = cv2.rectangle(display_img, (50, 60), (250, 200), (255, 0, 0), 2)  # Dessiner un rectangle exemple
-        qt_img = self.convert_cv_qt(display_img)
+        boxes, class_id, confidence = self.predict(cv_img)
+        for box, class_id, confidence in zip(boxes, class_id, confidence):
+            if confidence < 0.5:
+                continue
+            x, y, w, h = box
+            x_min, y_min = int(x * self.display_width), int(y * self.display_height)
+            x_max, y_max = int((x + w) * self.display_width), int((y + h) * self.display_height)
+            cv2.rectangle(cv_img, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+            label = f"{class_id} ({confidence * 100:.2f}%)"
+            cv2.putText(cv_img, label, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        qt_img = self.convert_cv_qt(cv_img)
         self.image_label.setPixmap(qt_img)
         self.thread.grab_frame = True
 
