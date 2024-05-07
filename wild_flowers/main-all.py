@@ -59,8 +59,8 @@ class App(QWidget):
         output_details = self.interpreter.get_output_details()
         input_shape = input_details[0]['shape']
         frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
-        frame = np.expand_dims(frame, axis=0).astype(np.float32)
-        frame = (frame - 127.5) / 127.5  # Normalisation
+        frame = np.expand_dims(frame, axis=0).astype(np.uint8)
+        frame = ((frame - 127.5) / 127.5).astype(np.uint8)  # Normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
@@ -87,7 +87,7 @@ class App(QWidget):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="./models/orchidees/model.tflite")
+    parser.add_argument("--model", default="../models/orchidees/model.tflite")
     parser.add_argument('--camera_test', action=argparse.BooleanOptionalAction)
     parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
 
