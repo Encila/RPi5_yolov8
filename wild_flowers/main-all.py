@@ -59,7 +59,7 @@ class App(QWidget):
         output_details = self.interpreter.get_output_details()
         input_shape = input_details[0]['shape']
         frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
-        frame = np.expend_dims(frame, axis=0)
+        frame = np.expand_dims(frame, axis=0)
         frame = (frame - 127.5) / 127.5  # Normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
