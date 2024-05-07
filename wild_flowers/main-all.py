@@ -60,19 +60,20 @@ class App(QWidget):
         input_shape = input_details[0]['shape']
         frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
         frame = np.expand_dims(frame, axis=0).astype(np.uint8)
-        frame = ((frame - 127.5) / 127.5).astype(np.uint8)  # Normalisation
+        frame = ((frame - 127.5) / 127.5).astype(np.float32)  # Correction de normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
-        return np.argmax(output_data)
+        class_id = np.argmax(output_data)
+        confidence = np.max(output_data)
+        return class_id, confidence  # Renvoie aussi la confiance
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
-        result = self.predict(cv_img)
-        display_img = cv2.putText(cv_img, f"Predicted: {result}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-        fps_util = SimpleFPS()
-        fps, _ = fps_util.get_fps()
-        draw_fps(display_img, fps)
+        class_id, confidence = self.predict(cv_img)
+        label = f"{class_id} ({confidence * 100:.2f}%)"  # Affichage avec confiance
+        display_img = cv2.putText(cv_img, label, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        display_img = cv2.rectangle(display_img, (50, 60), (250, 200), (255, 0, 0), 2)  # Dessiner un rectangle exemple
         qt_img = self.convert_cv_qt(display_img)
         self.image_label.setPixmap(qt_img)
         self.thread.grab_frame = True
