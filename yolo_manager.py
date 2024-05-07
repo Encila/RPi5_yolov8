@@ -102,6 +102,7 @@ class YoloDetectorTFLite:
             np.clip(normalized_input, 0, 255, out=normalized_input)
             common.set_input(self.interpreter, normalized_input.astype(np.uint8))
         else:
+            print("input_img dim: ", input_img.ndim)
             input_img = input_img.astype(np.float32) / 255.  # change to float img
             self.interpreter.set_tensor(input_details[0]['index'], input_img)
 

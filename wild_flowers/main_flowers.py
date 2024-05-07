@@ -11,8 +11,6 @@ from utils import SimpleFPS, draw_fps, draw_annotation
 import argparse
 import time
 
-xeyes -display :0.0
-
 class VideoThreadPiCam(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
