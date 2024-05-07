@@ -67,13 +67,11 @@ class YoloDetectorTFLite:
         else:
             input_img = frame
         input_img = input_img[np.newaxis, ...]  # add batch dim
+        print("DEBUG : ", input_img.ndim)
         
         input_img = input_img.astype(np.uint8)  # Ensure data is in UINT8
         input_img = input_img[np.newaxis, ...]
-    
-        if input_img.ndim != 4 or input_img.shape[0] != tuple(input_shape):
-            raise ValueError(f"input_img shape is not correct. Expected {input_shape}, got {input_img.shape}")
-    
+        
         self.interpreter.set_tensor(input_details[0]['index'], input_img)
 
         self.interpreter.invoke()
