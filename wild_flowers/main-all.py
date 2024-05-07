@@ -87,7 +87,7 @@ class App(QWidget):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="./models/model.tflite")
+    parser.add_argument("--model", default="./models/orchidees/model.tflite")
     parser.add_argument('--camera_test', action=argparse.BooleanOptionalAction)
     parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
 
