@@ -59,7 +59,7 @@ class App(QWidget):
         output_details = self.interpreter.get_output_details()
         input_shape = input_details[0]['shape']
         frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
-        frame = np.expand_dims(frame, axis=0).astype(np.uint8)
+        frame = np.expand_dims(frame, axis=0)#.astype(np.uint8)
         frame = ((frame - 127.5) / 127.5).astype(np.uint8)  # Correction de normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
@@ -67,17 +67,27 @@ class App(QWidget):
         class_id = np.argmax(output_data)
         confidence = np.max(output_data)
         print("DEBUG : output_data ->", output_data)
-        return class_id, confidence  # Renvoie aussi la confiance
+        return class_id, confidence
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         class_id, confidence = self.predict(cv_img)
-        label = f"{class_id} ({confidence}%)"  # Affichage confidence (A CORRIGER)
-        display_img = cv2.putText(cv_img, label, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-        display_img = cv2.rectangle(display_img, (50, 60), (250, 200), (255, 0, 0), 2)  # Dessiner un rectangle exemple
-        qt_img = self.convert_cv_qt(display_img)
+        label = f"{class_id} ({confidence * 100:.2f}%)"
+        
+        #Encadrement
+        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(cv_img, contours, -1, (0, 255, 0), 3)
+        if contours:
+            c = max(contours, key=cv2.contourArea)
+            x, y, w, h = cv2.boundingRect(c)
+            cv2.rectangle(cv_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            cv2.putText(cv_img, label, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+        qt_img = self.convert_cv_qt(cv_img)
         self.image_label.setPixmap(qt_img)
         self.thread.grab_frame = True
+
 
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
