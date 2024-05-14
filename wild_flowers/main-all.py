@@ -64,8 +64,9 @@ class App(QWidget):
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
-        class_id = np.argmax(output_data)
-        confidence = np.max(output_data)
+        probabilities = tf.nn.softmax(output_data).numpy()
+        class_id = np.argmax(probabilities)
+        confidence = np.max(probabilities)
         print("DEBUG : output_data ->", output_data)
         return class_id, confidence
 
@@ -76,10 +77,12 @@ class App(QWidget):
         
         #Encadrement
         gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresh = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(cv_img, contours, -1, (0, 255, 0), 3)
         if contours:
+            # Trouver le contour avec la plus grande aire
             c = max(contours, key=cv2.contourArea)
             x, y, w, h = cv2.boundingRect(c)
             cv2.rectangle(cv_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
