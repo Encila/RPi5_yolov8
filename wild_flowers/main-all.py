@@ -63,6 +63,7 @@ class App(QWidget):
         frame = cv2.resize(frame, (input_shape[1], input_shape[2])).astype(np.uint8)
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
+        print("DEBUG : tensor ->", self.interpreter.get_tensor())
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
         probabilities = tf.nn.softmax(output_data).numpy()
         class_id = np.argmax(probabilities)
