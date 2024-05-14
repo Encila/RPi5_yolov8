@@ -58,12 +58,17 @@ class App(QWidget):
         input_details = self.interpreter.get_input_details()
         output_details = self.interpreter.get_output_details()
         input_shape = input_details[0]['shape']
-        frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
+        print(f"DEBUG: input_shape -> {input_shape}")
+
+        # Assurez-vous que input_shape est correct
+        if len(input_shape) != 4 or input_shape[0] != 1:
+            raise ValueError(f"Unexpected input_shape: {input_shape}")
+
+        # Redimensionner l'image
+        frame = cv2.resize(frame, (input_shape[2], input_shape[1])).astype(np.uint8)
         frame = np.expand_dims(frame, axis=0)
-        frame = ((frame - 127.5) / 127.5).astype(np.uint8)#.astype(np.uint8)  # Correction de normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
-        print("DEBUG : ", self.interpreter.get_tensor())
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
         probabilities = tf.nn.softmax(output_data).numpy()
         class_id = np.argmax(probabilities)
@@ -76,7 +81,7 @@ class App(QWidget):
         class_id, confidence = self.predict(cv_img)
         label = f"{class_id} ({confidence * 100:.2f}%)"
         
-        #Encadrement
+        # Encadrement
         gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         _, thresh = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -91,6 +96,7 @@ class App(QWidget):
         qt_img = self.convert_cv_qt(cv_img)
         self.image_label.setPixmap(qt_img)
         self.thread.grab_frame = True
+
 
 
     def convert_cv_qt(self, cv_img):
