@@ -70,7 +70,7 @@ class App(QWidget):
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
-        probabilities = tf.nn.softmax(output_data).numpy()
+        probabilities = tf.nn.softmax(output_data.astype(np.float32)).numpy()
         class_id = np.argmax(probabilities)
         confidence = np.max(probabilities)
         print("DEBUG : output_data ->", output_data)
