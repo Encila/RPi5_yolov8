@@ -60,10 +60,10 @@ class App(QWidget):
         input_shape = input_details[0]['shape']
         frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
         frame = np.expand_dims(frame, axis=0)
-        frame = cv2.resize(frame, (input_shape[1], input_shape[2])).astype(np.uint8)
+        frame = ((frame - 127.5) / 127.5).astype(np.float32)#.astype(np.uint8)  # Correction de normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
-        print("DEBUG : tensor ->", self.interpreter.get_tensor())
+        print("DEBUG : ", self.interpreter.get_tensor())
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
         probabilities = tf.nn.softmax(output_data).numpy()
         class_id = np.argmax(probabilities)
