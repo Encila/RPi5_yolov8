@@ -81,23 +81,29 @@ class App(QWidget):
         class_id, confidence = self.predict(cv_img)
         label = f"{class_id} ({confidence * 100:.2f}%)"
         
-        # Encadrement
-        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        _, thresh = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        #cv2.drawContours(cv_img, contours, -1, (0, 255, 0), 3)
-        if contours:
-            # Trouver le contour avec la plus grande aire
-            c = max(contours, key=cv2.contourArea)
-            x, y, w, h = cv2.boundingRect(c)
-            cv2.rectangle(cv_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
-            cv2.putText(cv_img, label, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+        # Only draw bounding box if confidence is above the threshold
+        threshold = 0.5  # Set your desired threshold here
+        if confidence > threshold:
+            gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            _, thresh = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            if contours:
+                c = max(contours, key=cv2.contourArea)
+                x, y, w, h = cv2.boundingRect(c)
+                cv2.rectangle(cv_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+                
+                # Check if label would be outside the window
+                label_x = x if x + w + 10 < self.disply_width else x - w
+                label_y = y - 10 if y - 10 > 0 else y + h + 20
+
+                cv2.putText(cv_img, label, (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
         qt_img = self.convert_cv_qt(cv_img)
         self.image_label.setPixmap(qt_img)
         self.thread.grab_frame = True
-
-
+        
 
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
