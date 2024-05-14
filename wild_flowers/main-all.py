@@ -58,29 +58,42 @@ class App(QWidget):
         input_details = self.interpreter.get_input_details()
         output_details = self.interpreter.get_output_details()
         input_shape = input_details[0]['shape']
-        frame = cv2.resize(frame, (input_shape[1], input_shape[2]))
+        print(f"DEBUG: input_shape -> {input_shape}")
+
+        # Assurez-vous que input_shape est correct
+        if len(input_shape) != 4 or input_shape[0] != 1:
+            raise ValueError(f"Unexpected input_shape: {input_shape}")
+
+        # Redimensionner l'image
+        frame = cv2.resize(frame, (input_shape[2], input_shape[1])).astype(np.uint8)
         frame = np.expand_dims(frame, axis=0)
-        frame = ((frame - 127.5) / 127.5).astype(np.uint8)  # Normalisation
         self.interpreter.set_tensor(input_details[0]['index'], frame)
         self.interpreter.invoke()
         output_data = self.interpreter.get_tensor(output_details[0]['index'])[0]
-        boxes = output_data[:, :4]
-        class_ids = np.argmax(output_data[:,4:], axis=1)
-        confidences = np.max(output_data[:,4:], axis=1)
-        return boxes, class_ids, confidences
+        probabilities = tf.nn.softmax(output_data.astype(np.float32)).numpy()
+        class_id = np.argmax(probabilities)
+        confidence = np.max(probabilities)
+        print("DEBUG : output_data ->", output_data)
+        return class_id, confidence
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
-        boxes, class_id, confidence = self.predict(cv_img)
-        for box, class_id, confidence in zip(boxes, class_id, confidence):
-            if confidence < 0.5:
-                continue
-            x, y, w, h = box
-            x_min, y_min = int(x * self.display_width), int(y * self.display_height)
-            x_max, y_max = int((x + w) * self.display_width), int((y + h) * self.display_height)
-            cv2.rectangle(cv_img, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
-            label = f"{class_id} ({confidence * 100:.2f}%)"
-            cv2.putText(cv_img, label, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        class_id, confidence = self.predict(cv_img)
+        label = f"{class_id} ({confidence * 100:.2f}%)"
+        
+        # Encadrement
+        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresh = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        #cv2.drawContours(cv_img, contours, -1, (0, 255, 0), 3)
+        if contours:
+            # Trouver le contour avec la plus grande aire
+            c = max(contours, key=cv2.contourArea)
+            x, y, w, h = cv2.boundingRect(c)
+            cv2.rectangle(cv_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            cv2.putText(cv_img, label, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
         qt_img = self.convert_cv_qt(cv_img)
         self.image_label.setPixmap(qt_img)
         self.thread.grab_frame = True
