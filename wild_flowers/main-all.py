@@ -8,7 +8,6 @@ import numpy as np
 import tensorflow as tf
 from picamera2 import Picamera2
 from utils import SimpleFPS, draw_fps
-from yolo_flowers_manager import get_label_names
 import argparse
 import time
 
@@ -53,6 +52,7 @@ class App(QWidget):
     def load_model(self, model_path):
         interpreter = tf.lite.Interpreter(model_path=str(model_path))
         interpreter.allocate_tensors()
+        default_labels =  = {0: 'orchidée pyramidale', 1: 'autre orchidée', 2: 'humain'}
         return interpreter
 
     def predict(self, frame):
@@ -80,8 +80,7 @@ class App(QWidget):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         class_id, confidence = self.predict(cv_img)
-        labels_names = get_label_names()
-        label = f"{labels_names[class_id]} ({confidence * 100:.2f}%)"
+        label = f"{self.default_labels[class_id]} ({confidence * 100:.2f}%)"
         
         # Only draw bounding box if confidence is above the threshold
         threshold = 0.5  # Set your desired threshold here
