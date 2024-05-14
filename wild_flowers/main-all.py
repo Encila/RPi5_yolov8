@@ -8,6 +8,7 @@ import numpy as np
 import tensorflow as tf
 from picamera2 import Picamera2
 from utils import SimpleFPS, draw_fps
+from yolo_flowers_manager import get_label_names
 import argparse
 import time
 
@@ -79,7 +80,8 @@ class App(QWidget):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         class_id, confidence = self.predict(cv_img)
-        label = f"{class_id} ({confidence * 100:.2f}%)"
+        labels_names = get_label_names()
+        label = f"{labels_names[class_id]} ({confidence * 100:.2f}%)"
         
         # Only draw bounding box if confidence is above the threshold
         threshold = 0.5  # Set your desired threshold here
@@ -88,6 +90,7 @@ class App(QWidget):
             blurred = cv2.GaussianBlur(gray, (5, 5), 0)
             _, thresh = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
             contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            #cv2.drawContours(cv_img, contours, -1, (0, 255, 0), 2)
             
             if contours:
                 c = max(contours, key=cv2.contourArea)
