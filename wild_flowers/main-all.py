@@ -52,7 +52,7 @@ class App(QWidget):
     def load_model(self, model_path):
         interpreter = tf.lite.Interpreter(model_path=str(model_path))
         interpreter.allocate_tensors()
-        default_labels =  = {0: 'orchidée pyramidale', 1: 'autre orchidée', 2: 'humain'}
+        self.default_labels = {0: 'orchidée pyramidale', 1: 'autre orchidée', 2: 'humain'}
         return interpreter
 
     def predict(self, frame):
