@@ -93,11 +93,10 @@ class App(QWidget):
             x, y, w, h = cv2.boundingRect(c)
             cv2.rectangle(cv_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
             cv2.putText(cv_img, label, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
         qt_img = self.convert_cv_qt(cv_img)
         self.image_label.setPixmap(qt_img)
         self.thread.grab_frame = True
-
-
 
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
