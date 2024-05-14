@@ -86,7 +86,7 @@ class App(QWidget):
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         _, thresh = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(cv_img, contours, -1, (0, 255, 0), 3)
+        #cv2.drawContours(cv_img, contours, -1, (0, 255, 0), 3)
         if contours:
             # Trouver le contour avec la plus grande aire
             c = max(contours, key=cv2.contourArea)
